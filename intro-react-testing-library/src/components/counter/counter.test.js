@@ -1,12 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
 
-export default function Counter() {
-    const [counts, setCounts] = useState(0);
+import Counter from "./counter";
 
-    return (
-        <>
-            <button onClick={() => setCounts(counts + 1)}>Click</button>
-            <p>Clicked times: {counts}</p>
-        </>
-    );
-}
+test("display zero initial counts", () => {
+    render(<Counter />);
+
+    const result = screen.getByText(/clicked times: 0/i);
+    expect(result).toBeInTheDocument();
+});
+
+test("display new counter after one click", () => {
+    render(<Counter />);
+
+    const button = screen.getByText(/click/i, { selector: "button" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    const result = screen.getByText(/clicked times: 2/i);
+    expect(result).toBeInTheDocument();
+});
