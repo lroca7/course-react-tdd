@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { Button, InputLabel, NativeSelect, TextField } from "@mui/material";
+import { saveProduct } from "../services/productServices";
+import { CREATED_STATUS } from "../const/httpStatus";
 
 export const Form = () => {
     const [isSaving, setIsSaving] = useState(false);
+    const [isSuccess, setIsSuccess] = useState(false);
     const [formErrors, setFormErrors] = useState({
         name: "",
         size: "",
@@ -29,11 +32,11 @@ export const Form = () => {
 
         validateForm({ name: name.value, size: size.value, type: type.value });
 
-        await fetch("/products", {
-            method: "POST",
-            body: JSON.stringify({}),
-        });
+        const response = await saveProduct();
 
+        if (response.status === CREATED_STATUS) {
+            setIsSuccess(true);
+        }
         setIsSaving(false);
     };
 
@@ -41,15 +44,11 @@ export const Form = () => {
         const { name, value } = e.target;
 
         validateField({ name, value });
-        // setFormErrors({
-        //     ...formErrors,
-        //     [name]: value.length ? "" : `The ${name} is required`,
-        // });
     };
     return (
         <>
             <h1>Create product</h1>
-
+            {isSuccess && <p>Product stored</p>}
             <form onSubmit={handleSubmit}>
                 <TextField
                     id="name"

@@ -3,10 +3,11 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Form } from "./form";
 import { rest } from "msw";
 import { setupServer } from "msw/node";
+import { CREATED_STATUS } from "../const/httpStatus";
 
 const server = setupServer(
     rest.post("/products", (req, res, ctx) => {
-        return res(ctx.status(201));
+        return res(ctx.status(CREATED_STATUS));
     })
 );
 
@@ -99,5 +100,16 @@ describe("When user submits the form", () => {
         expect(submitBtn).toBeDisabled();
 
         await waitFor(() => expect(submitBtn).not.toBeDisabled());
+    });
+
+    it('the form page must display the success message "product stored" and clean the fields values', async () => {
+        const submitBtn = screen.getByRole("button", { name: /submit/i });
+
+        fireEvent.click(submitBtn);
+
+        // eslint-disable-next-line testing-library/prefer-find-by
+        await waitFor(() =>
+            expect(screen.getByText(/product stored/i)).toBeInTheDocument()
+        );
     });
 });
