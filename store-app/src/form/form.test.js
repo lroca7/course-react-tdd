@@ -1,8 +1,18 @@
 import React from "react";
-
-import { fireEvent, render, screen } from "@testing-library/react";
-
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { Form } from "./form";
+import { rest } from "msw";
+import { setupServer } from "msw/node";
+
+const server = setupServer(
+    rest.post("/products", (req, res, ctx) => {
+        return res(ctx.status(201));
+    })
+);
+
+beforeAll(() => server.listen());
+
+afterAll(() => server.close());
 
 // eslint-disable-next-line testing-library/no-render-in-setup
 beforeEach(() => render(<Form />));
@@ -33,7 +43,7 @@ describe("When the form is mounted", () => {
 });
 
 describe("When the user submit the form whitout values", () => {
-    it("should display validation msj", () => {
+    it("should display validation msj", async () => {
         expect(
             screen.queryByText(/The name is required/i)
         ).not.toBeInTheDocument();
@@ -49,6 +59,12 @@ describe("When the user submit the form whitout values", () => {
         expect(screen.getByText(/The name is required/i)).toBeInTheDocument();
         expect(screen.getByText(/The size is required/i)).toBeInTheDocument();
         expect(screen.getByText(/The type is required/i)).toBeInTheDocument();
+
+        await waitFor(() =>
+            expect(
+                screen.getByRole("button", { name: /submit/i })
+            ).not.toBeDisabled()
+        );
     });
 });
 
@@ -69,5 +85,19 @@ describe("When the user blurs an empty field", () => {
 
         // eslint-disable-next-line testing-library/prefer-presence-queries
         expect(screen.queryByText(/the size is required/i)).toBeInTheDocument();
+    });
+});
+
+describe("When user submits the form", () => {
+    it("should the submit button be disabled until to request is done", async () => {
+        const submitBtn = screen.getByRole("button", { name: /submit/i });
+
+        expect(submitBtn).not.toBeDisabled();
+
+        fireEvent.click(submitBtn);
+
+        expect(submitBtn).toBeDisabled();
+
+        await waitFor(() => expect(submitBtn).not.toBeDisabled());
     });
 });

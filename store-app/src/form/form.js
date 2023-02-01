@@ -2,43 +2,49 @@ import React, { useState } from "react";
 import { Button, InputLabel, NativeSelect, TextField } from "@mui/material";
 
 export const Form = () => {
+    const [isSaving, setIsSaving] = useState(false);
     const [formErrors, setFormErrors] = useState({
         name: "",
         size: "",
         type: "",
     });
-    const handleSubmit = (e) => {
+
+    const validateField = ({ name, value }) => {
+        setFormErrors((prevState) => ({
+            ...prevState,
+            [name]: value.length ? "" : `The ${name} is required`,
+        }));
+    };
+
+    const validateForm = ({ name, size, type }) => {
+        validateField({ name: "name", value: name });
+        validateField({ name: "size", value: size });
+        validateField({ name: "type", value: type });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsSaving(true);
         const { name, size, type } = e.target.elements;
 
-        if (!name.value) {
-            setFormErrors((prevState) => ({
-                ...formErrors,
-                name: "The name is required",
-            }));
-        }
-        if (!size.value) {
-            setFormErrors((prevState) => ({
-                ...prevState,
-                size: "The size is required",
-            }));
-        }
+        validateForm({ name: name.value, size: size.value, type: type.value });
 
-        if (!type.value) {
-            setFormErrors((prevState) => ({
-                ...prevState,
-                type: "The type is required",
-            }));
-        }
+        await fetch("/products", {
+            method: "POST",
+            body: JSON.stringify({}),
+        });
+
+        setIsSaving(false);
     };
 
     const handleBlur = (e) => {
         const { name, value } = e.target;
 
-        setFormErrors({
-            ...formErrors,
-            [name]: value.length ? "" : `The ${name} is required`,
-        });
+        validateField({ name, value });
+        // setFormErrors({
+        //     ...formErrors,
+        //     [name]: value.length ? "" : `The ${name} is required`,
+        // });
     };
     return (
         <>
@@ -76,7 +82,9 @@ export const Form = () => {
 
                 {formErrors.type.length && <p>{formErrors.type}</p>}
 
-                <Button type="submit">Submit</Button>
+                <Button type="submit" disabled={isSaving}>
+                    Submit
+                </Button>
             </form>
         </>
     );
