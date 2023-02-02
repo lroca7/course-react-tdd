@@ -1,7 +1,11 @@
-export const saveProduct = () => {
+/* eslint-disable import/no-anonymous-default-export */
+export const saveProduct = ({ name, size, type }) => {
     return fetch("/products", {
         method: "POST",
-        body: JSON.stringify({}),
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ name, size, type }),
     });
 };
 
