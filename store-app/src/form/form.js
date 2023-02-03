@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import { Button, InputLabel, Select, TextField } from "@mui/material";
+import {
+    Button,
+    Container,
+    CssBaseline,
+    Grid,
+    InputLabel,
+    Select,
+    TextField,
+    Typography,
+} from "@mui/material";
 
 import { saveProduct } from "../services/productServices";
 import {
@@ -37,12 +46,15 @@ export const Form = () => {
     const handleFetchErrors = async (err) => {
         if (err.status === ERROR_SERVER_STATUS) {
             setErrorMessage("Unexpected error, please try again");
+            return;
         }
 
         if (err.status === INVALID_REQUEST_STATUS) {
             const data = await err.json();
             setErrorMessage(data.message);
+            return;
         }
+        setErrorMessage("connection error, please try later");
     };
 
     const handleSubmit = async (e) => {
@@ -80,44 +92,73 @@ export const Form = () => {
     };
 
     return (
-        <>
-            <h1>Create product</h1>
+        <Container maxWidth="xs">
+            <CssBaseline />
+
+            <Typography component="h1" variant="h5" align="center">
+                Create product
+            </Typography>
+
             {isSuccess && <p>Product Stored</p>}
+
             <p>{errorMessage}</p>
+
             <form onSubmit={handleSubmit}>
-                <TextField
-                    label="name"
-                    id="name"
-                    name="name"
-                    helperText={formErrors.name}
-                    onBlur={handleBlur}
-                />
-                <TextField
-                    label="size"
-                    id="size"
-                    name="size"
-                    helperText={formErrors.size}
-                    onBlur={handleBlur}
-                />
-                <InputLabel htmlFor="type">Type</InputLabel>
-                <Select
-                    native
-                    inputProps={{
-                        name: "type",
-                        id: "type",
-                    }}
-                >
-                    <option aria-label="None" value="" />
-                    <option value="electronic">Electronic</option>
-                    <option value="furniture">Furniture</option>
-                    <option value="clothing">Clothing</option>
-                </Select>
-                {formErrors.type.length && <p>{formErrors.type}</p>}
-                <Button disabled={isSaving} type="submit">
-                    Submit
-                </Button>
+                <Grid container spacing={4}>
+                    <Grid item xs={12}>
+                        <TextField
+                            fullWidth
+                            label="name"
+                            id="name"
+                            name="name"
+                            helperText={formErrors.name}
+                            onBlur={handleBlur}
+                            error={!!formErrors.name.length}
+                        />
+                    </Grid>
+
+                    <Grid item xs={12}>
+                        {" "}
+                        <TextField
+                            fullWidth
+                            label="size"
+                            id="size"
+                            name="size"
+                            helperText={formErrors.size}
+                            onBlur={handleBlur}
+                            error={!!formErrors.size.length}
+                        />
+                    </Grid>
+                    <Grid item xs={12}>
+                        {" "}
+                        <InputLabel fullWidth htmlFor="type">
+                            Type
+                        </InputLabel>
+                        <Select
+                            fullWidth
+                            native
+                            error={!!formErrors.type.length}
+                            inputProps={{
+                                name: "type",
+                                id: "type",
+                            }}
+                        >
+                            <option aria-label="None" value="" />
+                            <option value="electronic">Electronic</option>
+                            <option value="furniture">Furniture</option>
+                            <option value="clothing">Clothing</option>
+                        </Select>
+                        {!!formErrors.type.length && <p>{formErrors.type}</p>}
+                    </Grid>
+                    <Grid item xs={12}>
+                        {" "}
+                        <Button fullWidth disabled={isSaving} type="submit">
+                            Submit
+                        </Button>
+                    </Grid>
+                </Grid>
             </form>
-        </>
+        </Container>
     );
 };
 
